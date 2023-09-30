@@ -14,7 +14,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset, Dataset, Subset
 from dataloader import Datasubsets
 
-
 characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
 def load_fonts(only_basename=False):
@@ -97,11 +96,11 @@ class MyModel(nn.Module):
 def train():
     model = MyModel()
 
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
     num_epochs = 25
-    batch_size = 64
+    batch_size = 16
     learning_rate = 0.001
 
     criterion = nn.CrossEntropyLoss()
@@ -144,6 +143,8 @@ def train():
         # Train the model
         model.train()
         for inputs, targets in train_dataloader:
+            inputs, targets = inputs.to(device), targets.to(device)
+
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, targets)
@@ -160,6 +161,8 @@ def train():
         model.eval()
         with torch.no_grad():
             for inputs, targets in val_dataloader:
+                inputs, targets = inputs.to(device), targets.to(device)
+
                 outputs = model(inputs)
                 loss = criterion(outputs, targets)
 
