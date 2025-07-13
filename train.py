@@ -22,7 +22,7 @@ class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     output_classes = 95 
     num_epochs = 10
-    batch_size = 20
+    batch_size = 32
     learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     generate_data = False  # Set to True to generate data
@@ -89,28 +89,23 @@ def load_data():
 class GoogleFontsClassifier(nn.Module):
     def __init__(self, output_classes, dropout=0.5):
         super(GoogleFontsClassifier, self).__init__()
-        # Load pretrained VGG19 model
-        vgg19 = models.vgg19(weights=VGG19_Weights.DEFAULT)
-        vgg19.features[0] = nn.Conv2d(1, 64, kernel_size=3, padding=1)
-
-        self.features = vgg19.features
-
-        # Replace classifier to match 95 classes
-        self.classifier = nn.Sequential(
-            nn.Linear(512 * 4 * 21, 1024),  # For input (1, 150, 700) after VGG19 pooling
-            nn.ReLU(inplace=True),
-            nn.Dropout(dropout),
-            nn.Linear(1024, 1024),
+        # Load pretrained ResNet50 model
+        resnet50 = models.resnet50(weights="IMAGENET1K_V1")
+        # Change first conv layer to accept 1 channel (grayscale)
+        resnet50.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        # Replace the fully connected layer
+        num_ftrs = resnet50.fc.in_features
+        resnet50.fc = nn.Sequential(
+            nn.Linear(num_ftrs, 1024),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
             nn.Linear(1024, output_classes)
         )
+        self.resnet = resnet50
 
     def forward(self, x):
-        x = x.unsqueeze(1)
-        x = self.features(x)
-        x = x.flatten(1)
-        x = self.classifier(x)
+        x = x.unsqueeze(1)  # (B, 1, H, W)
+        x = self.resnet(x)
         return x
 
 
@@ -144,7 +139,7 @@ def train():
         project="cantaffordthatfont",
         config={
             "learning_rate": config.learning_rate,
-            "architecture": "VGG19",
+            "architecture": "ResNet50",
             "batch_size": config.batch_size,
             "epochs": config.num_epochs,
             "config": config.device,
