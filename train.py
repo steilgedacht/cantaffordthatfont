@@ -11,10 +11,23 @@ from datetime import datetime
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset, Dataset, Subset
+from torch.utils.data import DataLoader, Subset
 from dataloader import Datasubsets
+from torchvision import models
+from tqdm import tqdm
 
-characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+class Config:
+    characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    output_classes = 95 
+    num_epochs = 25
+    batch_size = 8
+    learning_rate = 3e-4
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    generate_data = False  # Set to True to generate data
+
+config = Config()
+
 
 def load_fonts(only_basename=False):
     dir_path = os.getcwd()
@@ -27,7 +40,7 @@ def load_fonts(only_basename=False):
 
 def generate_samples(font_family):
     text_length = random.randint(7, 18)
-    text = "".join(random.choice(characters) for _ in range(text_length))
+    text = "".join(random.choice(config.characters) for _ in range(text_length))
 
     # the images should have a size of 700px x 150px
     image_size = (700, 150)
@@ -35,7 +48,8 @@ def generate_samples(font_family):
 
     font = ImageFont.truetype(font_family, font_size)
 
-    noise = np.random.randint(0, 256, size=(image_size[1], image_size[0], 3), dtype=np.uint8)
+    # noise = np.random.randint(0, 256, size=(image_size[1], image_size[0], 3), dtype=np.uint8)
+    noise = 255 * np.ones((image_size[1], image_size[0], 3), dtype=np.uint8) 
     image = Image.fromarray(noise, "RGB")
     draw = ImageDraw.Draw(image)
 
@@ -70,43 +84,41 @@ def load_data():
     jpg_files.sort()
     return jpg_files
 
-class MyModel(nn.Module):
-    def __init__(self):
-        super(MyModel, self).__init__()
-        self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3)
-        self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
-        self.conv3 = nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3)
-        self.conv4 = nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3)
-        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
-        self.fc1 = nn.Linear(256 * 7 * 41, 512)  # Adjust input size based on your input
-        self.fc2 = nn.Linear(512, 95)
+class GoogleFontsClassifier(nn.Module):
+    def __init__(self, output_classes):
+        super(GoogleFontsClassifier, self).__init__()
+        # Load pretrained VGG19 model
+        vgg19 = models.vgg19(pretrained=True)
+        vgg19.features[0] = nn.Conv2d(1, 64, kernel_size=3, padding=1)
+
+        self.features = vgg19.features
+
+        # Replace classifier to match 95 classes
+        self.classifier = nn.Sequential(
+            nn.Linear(512 * 4 * 21, 1024),  # For input (1, 150, 700) after VGG19 pooling
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(1024, 1024),
+            nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
+            nn.Linear(1024, output_classes)
+        )
 
     def forward(self, x):
-        x = x.unsqueeze(1)  # Add a channel dimension (1 channel for grayscale)
-        x = self.pool(torch.relu(self.conv1(x)))
-        x = self.pool(torch.relu(self.conv2(x)))
-        x = self.pool(torch.relu(self.conv3(x)))
-        x = self.pool(torch.relu(self.conv4(x)))
-        x = x.view(-1, 256 * 7 * 41)  # Adjust the size based on your input
-        x = torch.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = x.unsqueeze(1)
+        x = self.features(x)
+        x = x.flatten(1)
+        x = self.classifier(x)
         return x
 
 
 def train():
-    model = MyModel()
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model.to(device)
-
-    num_epochs = 25
-    batch_size = 16
-    learning_rate = 0.001
+    model = GoogleFontsClassifier(config.output_classes)
+    model.to(config.device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-    results = []
+    optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.num_epochs, eta_min=0.00001)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     model_filename = f"model/model_{timestamp}.pth"
@@ -115,35 +127,37 @@ def train():
     total_dataset = Datasubsets()
 
     # Split dataset into training, validation, and test set randomly
-    train_dataset = Subset(total_dataset, indices=np.arange(int(len(total_dataset) * (3 / 5))))
-    val_dataset = Subset(total_dataset, indices=np.arange(int(len(total_dataset) * (3 / 5)), len(total_dataset)))
+    indices = np.arange(len(total_dataset))
+    np.random.shuffle(indices)
+    split = int(len(indices) * (4 / 5))
+
+    train_dataset = Subset(total_dataset, indices=indices[:split])
+    val_dataset = Subset(total_dataset, indices=indices[split:])
 
     # Create datasets and dataloaders with rotated targets without augmentation (for evaluation)
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
 
     wandb.init(
-        # set the wandb project where this run will be logged
         project="cantaffordthatfont",
-
-        # track hyperparameters and run metadata
         config={
-            "learning_rate": learning_rate,
+            "learning_rate": config.learning_rate,
             "architecture": "CNN",
-            "batch_size": batch_size,
-            "epochs": num_epochs,
-            "device": device,
+            "batch_size": config.batch_size,
+            "epochs": config.num_epochs,
+            "config": config.device,
         }
     )
 
-    for epoch in range(num_epochs):
+    best_test_accuracy = -np.inf
 
-        results.append({"best_test_accuracy" : 0.0, "train_loss": 0.0, "train_accuracy": 0.0, "train_correct": 0, "val_loss": 0.0, "val_accuracy": 0.0, "val_correct": 0 })
+    for epoch in range(config.num_epochs):
+        correct_n = 0
 
         # Train the model
         model.train()
-        for inputs, targets in train_dataloader:
-            inputs, targets = inputs.to(device), targets.to(device)
+        for inputs, targets in tqdm(train_dataloader, desc=f"Training (Epoch {epoch+1}/{config.num_epochs})", leave=False):
+            inputs, targets = inputs.to(config.device), targets.to(config.device)
 
             optimizer.zero_grad()
             outputs = model(inputs)
@@ -151,33 +165,41 @@ def train():
             loss.backward()
             optimizer.step()
 
-            results[epoch]["train_correct"] += torch.sum(torch.argmax(outputs.data, dim=1) == torch.argmax(targets.data, dim=1)).item()
+            correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
             wandb.log({"training_loss": loss.item()})
-
-        results[epoch]["train_accuracy"] = results[epoch]["train_correct"] / len(train_dataset)
-        wandb.log({"train_accuracy": results[epoch]["train_accuracy"]})
+        wandb.log({"train_accuracy": correct_n / len(train_dataset)})
 
         # Evaluate the model on the validation set
+        val_loss = 0.0
+        correct_n = 0
+
         model.eval()
         with torch.no_grad():
-            for inputs, targets in val_dataloader:
-                inputs, targets = inputs.to(device), targets.to(device)
+            for inputs, targets in tqdm(val_dataloader, desc=f"Validation (Epoch {epoch+1}/{config.num_epochs})", leave=False):
+                inputs, targets = inputs.to(config.device), targets.to(config.device)
 
                 outputs = model(inputs)
                 loss = criterion(outputs, targets)
 
-                results[epoch]["val_loss"] += loss.item()
-                results[epoch]["val_correct"] += torch.sum(torch.argmax(outputs.data, dim=1) == torch.argmax(targets.data, dim=1)).item()
-                wandb.log({"validation_loss": loss.item()})
-        results[epoch]["val_accuracy"] = results[epoch]["val_correct"] / len(val_dataset)
-        wandb.log({"validation_accuracy": results[epoch]["val_accuracy"]})
+                val_loss += loss.item()
+                correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
+        wandb.log({"validation_loss": val_loss / len(val_dataloader)})
+        wandb.log({"validation_accuracy": correct_n / len(val_dataset)})
 
-        if results[epoch]["best_test_accuracy"] < results[epoch]["val_accuracy"]:
-            results[epoch]["best_test_accuracy"] = results[epoch]["val_accuracy"]
+        if best_test_accuracy < correct_n / len(val_dataset):
+            best_test_accuracy = correct_n / len(val_dataset)
+            os.makedirs("model", exist_ok=True)
             torch.save(model.state_dict(), model_filename)
+
+        scheduler.step()
+        wandb.log({"learning_rate": optimizer.param_groups[0]['lr']})
 
     wandb.finish()
 
 if __name__ == "__main__":
-    # generate_data(sample_number=1e3)
+    if config.generate_data:
+        print("Generating data...")
+        generate_data(sample_number=1e3)
+        print("Data generation complete.")
+
     train()

@@ -42,11 +42,9 @@ class Datasubsets(Dataset):
         image_data = image_data.convert("L")
 
         # Convert to float32
-        image_data = np.asarray(image_data, dtype=np.float32)
-        image_data = torch.tensor(image_data)
+        image_data = np.asarray(image_data)
+        image_data = torch.tensor(image_data, dtype=torch.float32)
 
-        onehot_label = [0.01] * len(self.embedding)
-        onehot_label[self.embedding.index(font_name)] = 0.99
-        onehot_label = torch.tensor(np.asarray(onehot_label, dtype=np.float32))
+        onehot_label = torch.tensor(self.embedding.index(font_name), dtype=torch.long)
 
         return image_data, onehot_label
