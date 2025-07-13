@@ -14,17 +14,19 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from dataloader import Datasubsets
 from torchvision import models
+from torchvision.models import VGG19_Weights
 from tqdm import tqdm
 
 
 class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     output_classes = 95 
-    num_epochs = 25
-    batch_size = 8
-    learning_rate = 3e-4
+    num_epochs = 10
+    batch_size = 20
+    learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     generate_data = False  # Set to True to generate data
+    dropout = 0.2
 
 config = Config()
 
@@ -85,10 +87,10 @@ def load_data():
     return jpg_files
 
 class GoogleFontsClassifier(nn.Module):
-    def __init__(self, output_classes):
+    def __init__(self, output_classes, dropout=0.5):
         super(GoogleFontsClassifier, self).__init__()
         # Load pretrained VGG19 model
-        vgg19 = models.vgg19(pretrained=True)
+        vgg19 = models.vgg19(weights=VGG19_Weights.DEFAULT)
         vgg19.features[0] = nn.Conv2d(1, 64, kernel_size=3, padding=1)
 
         self.features = vgg19.features
@@ -97,10 +99,10 @@ class GoogleFontsClassifier(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(512 * 4 * 21, 1024),  # For input (1, 150, 700) after VGG19 pooling
             nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(1024, 1024),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(1024, output_classes)
         )
 
@@ -113,7 +115,7 @@ class GoogleFontsClassifier(nn.Module):
 
 
 def train():
-    model = GoogleFontsClassifier(config.output_classes)
+    model = GoogleFontsClassifier(config.output_classes, dropout=config.dropout)
     model.to(config.device)
 
     criterion = nn.CrossEntropyLoss()
@@ -135,14 +137,14 @@ def train():
     val_dataset = Subset(total_dataset, indices=indices[split:])
 
     # Create datasets and dataloaders with rotated targets without augmentation (for evaluation)
-    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
     wandb.init(
         project="cantaffordthatfont",
         config={
             "learning_rate": config.learning_rate,
-            "architecture": "CNN",
+            "architecture": "VGG19",
             "batch_size": config.batch_size,
             "epochs": config.num_epochs,
             "config": config.device,
@@ -156,14 +158,17 @@ def train():
 
         # Train the model
         model.train()
+        scaler = torch.amp.GradScaler()
         for inputs, targets in tqdm(train_dataloader, desc=f"Training (Epoch {epoch+1}/{config.num_epochs})", leave=False):
             inputs, targets = inputs.to(config.device), targets.to(config.device)
 
             optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = criterion(outputs, targets)
-            loss.backward()
-            optimizer.step()
+            with torch.amp.autocast(device_type="cuda"):
+                outputs = model(inputs)
+                loss = criterion(outputs, targets)
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
 
             correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
             wandb.log({"training_loss": loss.item()})
