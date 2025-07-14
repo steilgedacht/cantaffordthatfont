@@ -21,13 +21,13 @@ class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     output_classes = 95 
     num_epochs = 10
-    batch_size = 18
+    batch_size = 64
     learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    generate_data = True  # Set to True to generate data
+    generate_data = False  # Set to True to generate data
     dropout = 0.2
-    wandb_tag = "resnet101"
-    fonts_folder = "all_fonts"
+    wandb_tag = "resnet18"
+    fonts_folder = "fonts_subset"
 config = Config()
 
 
@@ -90,18 +90,18 @@ class GoogleFontsClassifier(nn.Module):
     def __init__(self, output_classes, dropout=0.5):
         super(GoogleFontsClassifier, self).__init__()
 
-        resnet101 = models.resnet101(weights="IMAGENET1K_V1")
+        resnet18 = models.resnet18(weights="IMAGENET1K_V1")
         # Change first conv layer to accept 1 channel (grayscale)
-        resnet101.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        resnet18.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         # Replace the fully connected layer
-        num_ftrs = resnet101.fc.in_features
-        resnet101.fc = nn.Sequential(
+        num_ftrs = resnet18.fc.in_features
+        resnet18.fc = nn.Sequential(
             nn.Linear(num_ftrs, 1024),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
             nn.Linear(1024, output_classes)
         )
-        self.resnet = resnet101
+        self.resnet = resnet18
 
     def forward(self, x):
         x = x.unsqueeze(1)  # (B, 1, H, W)
@@ -199,7 +199,7 @@ def train():
 if __name__ == "__main__":
     if config.generate_data:
         print("Generating data...")
-        generate_data(sample_number=10)
+        generate_data(sample_number=1000)
         print("Data generation complete.")
 
     train()
