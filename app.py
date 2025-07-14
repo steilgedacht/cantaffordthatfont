@@ -1,5 +1,5 @@
 import streamlit as st
-from train import GoogleFontsClassifier
+from utils import GoogleFontsClassifier_ResNet50
 from PIL import Image, ImageOps
 import torch
 import numpy as np
@@ -12,8 +12,8 @@ def main():
     user_input = st.file_uploader("Bild hochladen oder einfügen", type=["png", "jpg", "jpeg"])
 
     # Load model and weights
-    model = GoogleFontsClassifier(95)
-    model.load_state_dict(torch.load("model/model_2025-07-13_14-01-49.pth", map_location=torch.device("cpu"), weights_only=True))
+    model = GoogleFontsClassifier_ResNet50(95)
+    model.load_state_dict(torch.load("model/model_resnet50.pth", map_location=torch.device("cpu")))
     model.eval()
 
     if user_input is not None:
@@ -23,8 +23,8 @@ def main():
 
         # Let user select a region of interest
         st.write("Wähle einen Bereich im Bild aus:")
-        crop = st.slider("Bereich auswählen (x1, y1, x2, y2)", 0, min(image.size), (0, 0, image.size[0], image.size[1]))
-        x1, y1, x2, y2 = crop
+        x1, x2 = st.slider("x-Bereich auswählen", 0, image.size[0], (0, image.size[0]))
+        y1, y2 = st.slider("y-Bereich auswählen", 0, image.size[1], (0, image.size[1]))
         cropped_img = image.crop((x1, y1, x2, y2))
         st.image(cropped_img, caption="Ausgewählter Bereich", use_column_width=True)
 

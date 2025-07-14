@@ -14,7 +14,6 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from dataloader import Datasubsets
 from torchvision import models
-from torchvision.models import VGG19_Weights
 from tqdm import tqdm
 
 
@@ -22,18 +21,19 @@ class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     output_classes = 95 
     num_epochs = 10
-    batch_size = 32
+    batch_size = 18
     learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    generate_data = False  # Set to True to generate data
+    generate_data = True  # Set to True to generate data
     dropout = 0.2
-
+    wandb_tag = "resnet101"
+    fonts_folder = "all_fonts"
 config = Config()
 
 
 def load_fonts(only_basename=False):
     dir_path = os.getcwd()
-    font_files = glob.glob(os.path.join(dir_path, 'fonts_subset/*.ttf'), recursive=True)
+    font_files = glob.glob(os.path.join(dir_path, f'{config.fonts_folder}/*.ttf'), recursive=True)
     font_files.sort()
     if only_basename:
         for file in font_files:
@@ -89,19 +89,19 @@ def load_data():
 class GoogleFontsClassifier(nn.Module):
     def __init__(self, output_classes, dropout=0.5):
         super(GoogleFontsClassifier, self).__init__()
-        # Load pretrained ResNet50 model
-        resnet50 = models.resnet50(weights="IMAGENET1K_V1")
+
+        resnet101 = models.resnet101(weights="IMAGENET1K_V1")
         # Change first conv layer to accept 1 channel (grayscale)
-        resnet50.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        resnet101.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         # Replace the fully connected layer
-        num_ftrs = resnet50.fc.in_features
-        resnet50.fc = nn.Sequential(
+        num_ftrs = resnet101.fc.in_features
+        resnet101.fc = nn.Sequential(
             nn.Linear(num_ftrs, 1024),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
             nn.Linear(1024, output_classes)
         )
-        self.resnet = resnet50
+        self.resnet = resnet101
 
     def forward(self, x):
         x = x.unsqueeze(1)  # (B, 1, H, W)
@@ -139,10 +139,10 @@ def train():
         project="cantaffordthatfont",
         config={
             "learning_rate": config.learning_rate,
-            "architecture": "ResNet50",
+            "architecture": config.wandb_tag,
             "batch_size": config.batch_size,
             "epochs": config.num_epochs,
-            "config": config.device,
+            "device": config.device,
         }
     )
 
@@ -199,7 +199,7 @@ def train():
 if __name__ == "__main__":
     if config.generate_data:
         print("Generating data...")
-        generate_data(sample_number=1e3)
+        generate_data(sample_number=10)
         print("Data generation complete.")
 
     train()
