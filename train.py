@@ -27,7 +27,7 @@ class Config:
     generate_data = False  # Set to True to generate data
     dropout = 0.2
     wandb_tag = "resnet18"
-    fonts_folder = "all_fonts"
+    fonts_folder = "all_fonts_filtered" 
 config = Config()
 
 
@@ -90,18 +90,18 @@ class GoogleFontsClassifier(nn.Module):
     def __init__(self, output_classes, dropout=0.5):
         super(GoogleFontsClassifier, self).__init__()
 
-        resnet18 = models.resnet18(weights="IMAGENET1K_V1")
+        resnet = models.resnet18(weights="IMAGENET1K_V1")
         # Change first conv layer to accept 1 channel (grayscale)
-        resnet18.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        resnet.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
         # Replace the fully connected layer
-        num_ftrs = resnet18.fc.in_features
-        resnet18.fc = nn.Sequential(
+        num_ftrs = resnet.fc.in_features
+        resnet.fc = nn.Sequential(
             nn.Linear(num_ftrs, 4096),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
             nn.Linear(4096, output_classes)
         )
-        self.resnet = resnet18
+        self.resnet = resnet
 
     def forward(self, x):
         x = x.unsqueeze(1)  # (B, 1, H, W)
@@ -110,6 +110,11 @@ class GoogleFontsClassifier(nn.Module):
 
 
 def train():
+    # Load dataset
+    total_dataset = Datagenerator(config)
+    config.output_classes = len(total_dataset.fonts_unique)
+    print(f"Total unique fonts: {config.output_classes}")
+
     model = GoogleFontsClassifier(config.output_classes, dropout=config.dropout)
     model.to(config.device)
 
@@ -119,9 +124,6 @@ def train():
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     model_filename = f"model/model_{timestamp}.pth"
-
-    # Load dataset
-    total_dataset = Datagenerator(config)
 
     # Split dataset into training, validation, and test set randomly
     indices = np.arange(len(total_dataset))

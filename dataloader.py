@@ -65,6 +65,10 @@ class Datagenerator(Dataset):
         for file in font_files:
             basename = os.path.splitext(os.path.basename(file))[0]
             basename = basename.split("[")[0].split("-")[0]
+            if basename.startswith("NotoSans"):
+                basename = "NotoSans"
+            elif basename.startswith("NotoSerif"):
+                basename = "NotoSerif"
             self.font_files_dict[file] = basename
         
         self.font_files = font_files
@@ -76,11 +80,17 @@ class Datagenerator(Dataset):
                 self.font_to_subfonts[font[1]] = []
             self.font_to_subfonts[font[1]].append(font[0])
 
+        self.deterministic = False
+
     def __len__(self):
         return len(self.fonts_unique) * 100
 
     def __getitem__(self, idx):
-        font_family_name = random.choice(self.fonts_unique)
+        if self.deterministic:
+            font_family_name = self.fonts_unique[idx]
+        else:
+            font_family_name = random.choice(self.fonts_unique)
+    
         if len(self.font_to_subfonts[font_family_name]) != 1:
             font_family = random.choice(self.font_to_subfonts[font_family_name])
         else:

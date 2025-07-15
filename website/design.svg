@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="design.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.52410025"
+     inkscape:cx="108.75782"
+     inkscape:cy="564.77745"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath33">
+      <rect
+         style="fill:#000000;stroke:none;stroke-width:0.999995;stroke-linecap:butt;stroke-linejoin:bevel;paint-order:stroke markers fill;stop-color:#000000"
+         id="rect33"
+         width="46.19186"
+         height="80.006783"
+         x="74.999985"
+         y="399.99661" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath25">
+      <rect
+         style="fill:#ff0000;stroke:none;stroke-width:3;stroke-linecap:square;stroke-linejoin:miter;paint-order:stroke markers fill;stop-color:#000000"
+         id="rect25-8"
+         width="78"
+         height="45.033199"
+         x="763.61322"
+         y="452.82422" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath51">
+      <path
+         id="path51"
+         style="stroke-width:0.0999999;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000000"
+         d="m 1806.4991,-753.5228 h 1637.2646 v 66.90533 H 1806.4991 Z" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath54">
+      <path
+         id="path54"
+         style="stroke-width:0.0999999;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000000"
+         d="m 1691.1994,-792.32001 h 1634.8919 v 92.82806 H 1691.1994 Z" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath55">
+      <path
+         id="path55"
+         style="stroke-width:0.1;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000000"
+         d="m 1736.6147,-745.57287 h 1589.4765 v 72.46715 H 1736.6147 Z" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath5">
+      <path
+         id="path9"
+         style="stroke-width:0.1;stroke-linecap:square;paint-order:markers fill stroke;stop-color:#000000"
+         d="m 438.25066,553.76374 859.87054,0 v 201.39554 l -859.87054,0 z"
+         sodipodi:nodetypes="ccccc" />
+    </clipPath>
+    <marker
+       style="overflow:visible"
+       id="ConcaveTriangle"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Concave triangle arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path7" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke-width:0.85979;stroke-linejoin:bevel"
+       id="rect1"
+       width="210"
+       height="297"
+       x="0"
+       y="0" />
+    <rect
+       style="fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:1;stroke-linejoin:miter;stroke-dasharray:4, 4;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect5"
+       width="103.87861"
+       height="64.96875"
+       x="58.761353"
+       y="57.255814"
+       ry="4.4621396" />
+    <text
+       xml:space="preserve"
+       style="font-size:8.56109px;line-height:1;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';text-align:center;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#0b0707;fill-opacity:1;stroke-width:1.27001;stroke-linejoin:bevel"
+       x="108.28431"
+       y="35.118679"
+       id="text1"><tspan
+         sodipodi:role="line"
+         id="tspan1"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:1;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:center;text-anchor:middle;fill:#0b0707;fill-opacity:1;stroke-width:1.27001"
+         x="108.28431"
+         y="35.118679">Can't afford that font?</tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444px;line-height:1;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:center;text-anchor:middle;fill:#0b0707;fill-opacity:1;stroke-width:1.27001"
+         x="108.28431"
+         y="43.679768"
+         id="tspan3">Let's find the most similar one on Google Fonts!</tspan></text>
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.5;stroke-linejoin:miter;stroke-dasharray:2, 2;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect4"
+       width="103.87861"
+       height="64.96875"
+       x="54.081131"
+       y="52.83173"
+       ry="4.4621396" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#242424;stroke-width:0.349;stroke-linejoin:miter;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       d="m 102.37235,103.04132 c -0.64774,-0.44916 -1.50135,-0.14335 -2.18638,-0.48586 -0.610041,-0.30502 -1.556541,-1.14889 -2.06492,-1.57906 -3.522715,-2.980758 -5.308792,-5.108566 -4.615702,-9.960198 0.230533,-1.613734 0.997063,-3.175004 2.247119,-4.008374"
+       id="path5" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.24282px;line-height:0.7;font-family:Cantarell;-inkscape-font-specification:'Cantarell Bold';text-align:center;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:middle;fill:#0b0707;fill-opacity:1;stroke-width:1.07445;stroke-linejoin:bevel"
+       x="91.587265"
+       y="113.129"
+       id="text1-7"
+       transform="rotate(-7.0467595)"><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.77529px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-anchor:start;fill:#0b0707;fill-opacity:1;stroke-width:1.07445"
+         x="91.587265"
+         y="113.129"
+         id="tspan3-2">Upload a image </tspan><tspan
+         sodipodi:role="line"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.77529px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-anchor:start;fill:#0b0707;fill-opacity:1;stroke-width:1.07445"
+         x="91.587265"
+         y="118.19897"
+         id="tspan4">or directly CTRL-V it in here</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.581005;stroke-linejoin:miter;stroke-dasharray:2.32402, 2.32402;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect41"
+       width="33.019833"
+       height="31.109104"
+       x="55.152042"
+       y="128.71347"
+       ry="3.0740223" />
+    <rect
+       style="fill:#2b2b2b;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.578532;stroke-linejoin:miter;stroke-dasharray:2.31413, 2.31413;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect42"
+       width="33.141724"
+       height="30.731413"
+       x="55.091087"
+       y="128.65291"
+       ry="3.0367012" />
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.594189;stroke-linejoin:miter;stroke-dasharray:2.37676, 2.37676;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect42-2"
+       width="33.019833"
+       height="32.536991"
+       x="90.746521"
+       y="128.7975"
+       ry="3.2151179" />
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.59744;stroke-linejoin:miter;stroke-dasharray:2.38976, 2.38976;stroke-dashoffset:0;stroke-opacity:1"
+       id="rect42-2-9"
+       width="33.019833"
+       height="32.89397"
+       x="126.60873"
+       y="128.7975"
+       ry="3.2503924" />
+    <rect
+       style="fill:#2b2b2b;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.59419;stroke-linejoin:miter;stroke-dasharray:2.37676, 2.37676;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect44"
+       width="33.019833"
+       height="32.536991"
+       x="90.746521"
+       y="128.7975"
+       ry="2.6670129" />
+    <rect
+       style="fill:#2b2b2b;fill-opacity:1;stroke:#b8b8b8;stroke-width:0.59744;stroke-linejoin:miter;stroke-dasharray:2.38976, 2.38976;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect45"
+       width="33.019833"
+       height="32.89397"
+       x="126.60873"
+       y="128.7975"
+       ry="3.2503924" />
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.510386;stroke-linejoin:miter;stroke-dasharray:2.04154, 2.04154;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect43-8"
+       width="33.019833"
+       height="24.006311"
+       x="55.152054"
+       y="135.81627"
+       ry="2.3721652" />
+    <rect
+       style="fill:#b8b8b8;fill-opacity:1;stroke:none;stroke-width:0.213942;stroke-linejoin:miter;stroke-dasharray:0.855774, 0.855774;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect43-8-9"
+       width="26.668283"
+       height="5.2227874"
+       x="58.227974"
+       y="151.7798"
+       ry="0.51608574" />
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.525346;stroke-linejoin:miter;stroke-dasharray:2.10139, 2.10139;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect44-1"
+       width="33.019833"
+       height="25.434195"
+       x="90.746521"
+       y="135.9003"
+       ry="2.5132604" />
+    <rect
+       style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.52902;stroke-linejoin:miter;stroke-dasharray:2.11608, 2.11608;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect45-9"
+       width="33.019833"
+       height="25.791168"
+       x="126.60873"
+       y="135.9003"
+       ry="2.5485344" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="58.589615"
+       y="133.90707"
+       id="text45"><tspan
+         sodipodi:role="line"
+         id="tspan45"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="58.589615"
+         y="133.90707">78% confidence </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="64.144432"
+       y="155.93883"
+       id="text45-7"><tspan
+         sodipodi:role="line"
+         id="tspan45-4"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="64.144432"
+         y="155.93883">Variant   v </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="95.056709"
+       y="134.05978"
+       id="text45-5"><tspan
+         sodipodi:role="line"
+         id="tspan45-3"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="95.056709"
+         y="134.05978">12% confidence </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="130.75191"
+       y="133.96281"
+       id="text45-5-0"><tspan
+         sodipodi:role="line"
+         id="tspan45-3-1"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="130.75191"
+         y="133.96281">11% confidence </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.6192px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:1.06892;stroke-linejoin:miter;stroke-dasharray:4.27568, 4.27568;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       x="59.774822"
+       y="144.90053"
+       id="text46"><tspan
+         sodipodi:role="line"
+         id="tspan46"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lobster;-inkscape-font-specification:Lobster;stroke-width:1.06892"
+         x="59.774822"
+         y="144.90053">Lobster</tspan></text>
+    <rect
+       style="fill:#b8b8b8;fill-opacity:1;stroke:none;stroke-width:0.213942;stroke-linejoin:miter;stroke-dasharray:0.855774, 0.855774;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect43-8-9-6"
+       width="26.668283"
+       height="5.2227874"
+       x="94.00592"
+       y="151.63457"
+       ry="0.51608574" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="99.922386"
+       y="155.79359"
+       id="text45-7-0"><tspan
+         sodipodi:role="line"
+         id="tspan45-4-6"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="99.922386"
+         y="155.79359">Variant   v </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.6192px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:1.06892;stroke-linejoin:miter;stroke-dasharray:4.27568, 4.27568;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       x="95.285042"
+       y="144.75529"
+       id="text46-6"><tspan
+         sodipodi:role="line"
+         id="tspan46-4"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Lobster Two';-inkscape-font-specification:'Lobster Two';stroke-width:1.06892"
+         x="95.285042"
+         y="144.75529">Lobster</tspan></text>
+    <rect
+       style="fill:#b8b8b8;fill-opacity:1;stroke:none;stroke-width:0.213942;stroke-linejoin:miter;stroke-dasharray:0.855774, 0.855774;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect43-8-9-6-6"
+       width="26.668283"
+       height="5.2227874"
+       x="129.61079"
+       y="152.0466"
+       ry="0.51608574" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.90242px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977;stroke-linejoin:miter;stroke-dasharray:2.43192, 2.43192;stroke-dashoffset:0;stroke-opacity:1"
+       x="135.52727"
+       y="156.20563"
+       id="text45-7-0-0"><tspan
+         sodipodi:role="line"
+         id="tspan45-4-6-7"
+         style="fill:#f0f0f0;fill-opacity:1;stroke:none;stroke-width:0.607977"
+         x="135.52727"
+         y="156.20563">Variant   v </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.6192px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:1.06892;stroke-linejoin:miter;stroke-dasharray:4.27568, 4.27568;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       x="133.21024"
+       y="145.16733"
+       id="text46-6-0"><tspan
+         sodipodi:role="line"
+         id="tspan46-4-1"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Montez;-inkscape-font-specification:Montez;stroke-width:1.06892"
+         x="133.21024"
+         y="145.16733">Lobster</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:8.6192px;line-height:0.7;font-family:'Nanum Pen';-inkscape-font-specification:'Nanum Pen';text-align:start;text-decoration-color:#000000;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;text-anchor:start;fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:1.06892;stroke-linejoin:miter;stroke-dasharray:4.27568, 4.27568;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       x="59.205509"
+       y="158.82224"
+       id="text46-2"><tspan
+         sodipodi:role="line"
+         id="tspan46-0"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Lobster;-inkscape-font-specification:Lobster;stroke-width:1.06892"
+         x="59.205509"
+         y="158.82224" /></text>
+    <rect
+       style="fill:#b8b8b8;fill-opacity:1;stroke:none;stroke-width:0.7;stroke-linejoin:miter;stroke-dasharray:2.80001, 2.80001;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect46"
+       width="113.08269"
+       height="2.3979588"
+       x="55.784096"
+       y="164.82811"
+       ry="1.1989794" />
+    <rect
+       style="fill:#2b2b2b;fill-opacity:1;stroke:none;stroke-width:0.455264;stroke-linejoin:miter;stroke-dasharray:1.82106, 1.82106;stroke-dashoffset:0;stroke-opacity:1;paint-order:markers stroke fill"
+       id="rect46-4"
+       width="47.832966"
+       height="2.3979588"
+       x="55.784103"
+       y="164.82811"
+       ry="1.1989794" />
+  </g>
+</svg>
