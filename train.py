@@ -12,22 +12,22 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
-from dataloader import Datasubsets
+from dataloader import Datasubsets, Datagenerator
 from torchvision import models
 from tqdm import tqdm
 
 
 class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    output_classes = 95 
-    num_epochs = 10
-    batch_size = 64
+    output_classes = 1967 
+    num_epochs = 100
+    batch_size = 100
     learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     generate_data = False  # Set to True to generate data
     dropout = 0.2
     wandb_tag = "resnet18"
-    fonts_folder = "fonts_subset"
+    fonts_folder = "all_fonts"
 config = Config()
 
 
@@ -96,10 +96,10 @@ class GoogleFontsClassifier(nn.Module):
         # Replace the fully connected layer
         num_ftrs = resnet18.fc.in_features
         resnet18.fc = nn.Sequential(
-            nn.Linear(num_ftrs, 1024),
+            nn.Linear(num_ftrs, 4096),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
-            nn.Linear(1024, output_classes)
+            nn.Linear(4096, output_classes)
         )
         self.resnet = resnet18
 
@@ -121,7 +121,7 @@ def train():
     model_filename = f"model/model_{timestamp}.pth"
 
     # Load dataset
-    total_dataset = Datasubsets()
+    total_dataset = Datagenerator(config)
 
     # Split dataset into training, validation, and test set randomly
     indices = np.arange(len(total_dataset))
