@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-    output_classes = 1967 
+    output_classes = 1738 
     num_epochs = 100
     batch_size = 100
     learning_rate = 7e-4
@@ -152,6 +152,7 @@ def train():
 
     for epoch in range(config.num_epochs):
         correct_n = 0
+        correct_top4 = 0
 
         # Train the model
         model.train()
@@ -168,12 +169,20 @@ def train():
             scaler.update()
 
             correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
+            
+            # Compute top-4 accuracy
+            top4 = torch.topk(outputs, k=4, dim=1).indices  # (batch_size, 4)
+            targets_expanded = targets.view(-1, 1).expand_as(top4)
+            correct_top4 += torch.sum(top4 == targets_expanded).item()
+
             wandb.log({"training_loss": loss.item()})
         wandb.log({"train_accuracy": correct_n / len(train_dataset)})
+        wandb.log({"train_accuracy_top4": correct_top4 / len(train_dataset)})
 
         # Evaluate the model on the validation set
         val_loss = 0.0
         correct_n = 0
+        correct_top4 = 0
 
         model.eval()
         with torch.no_grad():
@@ -185,8 +194,15 @@ def train():
 
                 val_loss += loss.item()
                 correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
+
+                # Compute top-4 accuracy
+                top4 = torch.topk(outputs, k=4, dim=1).indices  # (batch_size, 4)
+                targets_expanded = targets.view(-1, 1).expand_as(top4)
+                correct_top4 += torch.sum(top4 == targets_expanded).item()
+
         wandb.log({"validation_loss": val_loss / len(val_dataloader)})
         wandb.log({"validation_accuracy": correct_n / len(val_dataset)})
+        wandb.log({"validation_accuracy_top4": correct_top4 / len(val_dataset)})
 
         if best_test_accuracy < correct_n / len(val_dataset):
             best_test_accuracy = correct_n / len(val_dataset)
