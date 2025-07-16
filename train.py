@@ -91,16 +91,26 @@ class GoogleFontsClassifier(nn.Module):
         super(GoogleFontsClassifier, self).__init__()
 
         resnet = models.resnet18(weights="IMAGENET1K_V1")
-        # Change first conv layer to accept 1 channel (grayscale)
-        resnet.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
-        # Replace the fully connected layer
-        num_ftrs = resnet.fc.in_features
-        resnet.fc = nn.Sequential(
-            nn.Linear(num_ftrs, 4096),
-            nn.ReLU(inplace=True),
-            nn.Dropout(dropout),
-            nn.Linear(4096, output_classes)
+
+        # Remove layer4 from resnet
+        resnet = nn.Sequential(
+            nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False),
+            resnet.bn1,
+            resnet.relu,
+            resnet.maxpool,
+            resnet.layer1,
+            resnet.layer2,
+            resnet.layer3,
+            resnet.avgpool,
+            nn.Flatten(),
+            nn.Sequential(
+                nn.Linear(256, 512),
+                nn.ReLU(inplace=True),
+                nn.Dropout(dropout),
+                nn.Linear(512, output_classes)
+            )
         )
+
         self.resnet = resnet
 
     def forward(self, x):
