@@ -92,26 +92,20 @@ class GoogleFontsClassifier(nn.Module):
 
         resnet = models.resnet18(weights="IMAGENET1K_V1")
 
-        # Remove layer4 from resnet
-        resnet = nn.Sequential(
+        self.resnet = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False),
             resnet.bn1,
             resnet.relu,
             resnet.maxpool,
             resnet.layer1,
             resnet.layer2,
-            resnet.layer3,
             resnet.avgpool,
             nn.Flatten(),
-            nn.Sequential(
-                nn.Linear(256, 512),
-                nn.ReLU(inplace=True),
-                nn.Dropout(dropout),
-                nn.Linear(512, output_classes)
-            )
+            nn.Linear(128, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dropout),
+            nn.Linear(512, output_classes)
         )
-
-        self.resnet = resnet
 
     def forward(self, x):
         x = x.unsqueeze(1)  # (B, 1, H, W)
