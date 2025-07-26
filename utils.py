@@ -70,3 +70,30 @@ class GoogleFontsClassifier_ResNet18(nn.Module):
         x = x.unsqueeze(1)  # (B, 1, H, W)
         x = self.resnet(x)
         return x
+
+class GoogleFontsClassifier(nn.Module):
+    def __init__(self, output_classes, dropout=0.5):
+        super(GoogleFontsClassifier, self).__init__()
+
+        resnet = models.resnet18(weights="IMAGENET1K_V1")
+
+        self.resnet = nn.Sequential(
+            nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False),
+            resnet.bn1,
+            resnet.relu,
+            resnet.maxpool,
+            resnet.layer1,
+            resnet.layer2,
+            resnet.layer3,
+            resnet.avgpool,
+            nn.Flatten(),
+            nn.Linear(256, 256),
+            nn.ReLU(inplace=True),
+            nn.Dropout(dropout),
+            nn.Linear(256, output_classes)
+        )
+
+    def forward(self, x):
+        x = x.unsqueeze(1)  # (B, 1, H, W)
+        x = self.resnet(x)
+        return x

@@ -2,7 +2,7 @@ import glob
 import numpy as np
 import os
 import torch
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from torch.utils.data import Dataset
 import random
 
@@ -112,25 +112,27 @@ class Datagenerator(Dataset):
 
         # the images should have a size of 700px x 150px
         image_size = (700, 150)
-        font_size = 70
+        font_size = np.random.randint(50, 100)
 
         try:
             font = ImageFont.truetype(font_family, font_size)
         except:
             print(font_family)
 
-        # noise = np.random.randint(0, 256, size=(image_size[1], image_size[0], 3), dtype=np.uint8)
-        noise = 255 * np.ones((image_size[1], image_size[0], 3), dtype=np.uint8) 
-        image = Image.fromarray(noise, "RGB")
-        draw = ImageDraw.Draw(image)
+        noise = np.random.randint(200, 255, size=(image_size[1], image_size[0], 3), dtype=np.uint8)
+        noise = Image.fromarray(noise, "RGB")
+        blurnoise = noise.filter(ImageFilter.GaussianBlur(radius=random.randint(1,5)))
+        draw = ImageDraw.Draw(blurnoise)
 
-        x = random.randint(0, abs(image_size[0] - font_size * text_length))
-        y = random.randint(0, image_size[1] - font_size)
+        x = random.randint(0, 100)
+        y = random.randint(0, 50)
 
         try:
             draw.text((x, y), text, fill="black", font=font)
         except:
             print(font_family)
 
+        
+        image = blurnoise.filter(ImageFilter.GaussianBlur(radius=random.randint(0,3)))
     
         return image

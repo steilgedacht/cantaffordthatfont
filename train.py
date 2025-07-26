@@ -99,12 +99,13 @@ class GoogleFontsClassifier(nn.Module):
             resnet.maxpool,
             resnet.layer1,
             resnet.layer2,
+            resnet.layer3,
             resnet.avgpool,
             nn.Flatten(),
-            nn.Linear(128, 512),
+            nn.Linear(256, 256),
             nn.ReLU(inplace=True),
             nn.Dropout(dropout),
-            nn.Linear(512, output_classes)
+            nn.Linear(256, output_classes)
         )
 
     def forward(self, x):
