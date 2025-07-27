@@ -1,0 +1,17 @@
+h1 {
+    font-family: "Nanum Pen" !important;
+    text-align: center;
+}
+
+h3 {
+    font-family: "Nanum Pen" !important;
+    font-size: xx-large !important;
+    text-align: center;
+}
+
+.stColumn {
+    background-color: rgb(41, 49, 66) !important;
+    padding: 12px !important;
+    border-radius: 10px;
+    text-align: center;
+}
