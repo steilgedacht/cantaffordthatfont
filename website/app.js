@@ -1,7 +1,11 @@
 const { createApp, ref, onMounted} = Vue;
 
 async function runModel(inputData) {
-    const session = await ort.InferenceSession.create('./model_resnet_final_v1.onnx');
+    if (!session) {
+        console.error("Model session not initialized.");
+        return [];
+    }
+
     const feeds = { input: inputData };
     const results = await session.run(feeds);
     const result = results.output;
@@ -17,8 +21,6 @@ async function runModel(inputData) {
     const softmaxResult = softmax(result.data);
 
     // get the top 4 predictions
-    console.log('Softmax Result:', softmaxResult);
-
     const arr = Array.from(softmaxResult); // turn it into a regular array
 
     const topIndices = arr
@@ -26,9 +28,7 @@ async function runModel(inputData) {
         .sort((a, b) => b.value - a.value)
         .slice(0, 4)
         .map(item => item.index);
-        
-    console.log('Top Indices:', topIndices);
-
+    
     // load json 
     const fonts = await fetch('fonts.json');
     const fontsJson = await fonts.json();
@@ -36,16 +36,14 @@ async function runModel(inputData) {
     const fonts_to_subfonts = await fetch('fonts_to_subfonts.json');
     const fonts_to_subfontsJson = await fonts_to_subfonts.json();
 
-
     const topPredictions = topIndices.map(i => ({
         index: fontsJson[i],
         probability: softmaxResult[i],
-        font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0]
+        font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0],
+        subfonts: fonts_to_subfontsJson[fontsJson[i]],
+        selectedSubfont:  fonts_to_subfontsJson[fontsJson[i]][0],
+        link: "https://fonts.google.com/?query=" + fontsJson[i].replace(/(?<!\d)([A-Z])/g, ' $1').trim().replace(" ", "+")
     }));
-
-    console.log('Top Predictions:', topPredictions);
-
-    
 
     return topPredictions;
 }
@@ -81,7 +79,7 @@ async function process_image(img) {
     }
     const sorted = [...hist].map((count, i) => ({ i, count }))
                             .sort((a, b) => b.count - a.count);
-    if (sorted[0].i > sorted[1].i) {
+    if (sorted[0].i < sorted[1].i) {
         for (let i = 0; i < grayData.length; i++) {
             grayData[i] = 255 - grayData[i];
         }
@@ -90,10 +88,11 @@ async function process_image(img) {
     // Normalize to [0, 255]
     const min = Math.min(...grayData);
     const max = Math.max(...grayData);
-    const normData = grayData.map(v => ((v - min) / (max - min)) * 255);
-
+    const range = max - min || 1;
+    const normData = grayData.map(v => ((v - min) / range) * 255);
+    
     // Pad to 150x700
-    const padded = new Float32Array(150 * 700).fill(1); // white background
+    const padded = new Float32Array(150 * 700).fill(255); // white background
     for (let y = 0; y < 150; y++) {
         for (let x = 0; x < Math.min(targetWidth, 700); x++) {
             padded[y * 700 + x] = normData[y * targetWidth + x];
@@ -121,6 +120,17 @@ function injectFont(fontName, fontUrl) {
     document.head.appendChild(style);
 }
 
+function getFontName(pred) {
+    index = pred.selectedSubfont.split("-")[0];
+    let selected_subfont = pred.selectedSubfont.split("-").slice(-1)[0].split(".")[0];
+    const fontName = `PredictedFont-${index}-${selected_subfont}`;
+    injectFont(fontName, 'all_fonts_filtered/' + pred.selectedSubfont);
+    return fontName;
+}
+
+async function initializeModel() {
+    session = await ort.InferenceSession.create('./model_resnet_final_v1.onnx');
+}
 
 createApp({
     setup() {
@@ -128,6 +138,7 @@ createApp({
         const result = ref(null);
 
         let input_data = null;
+        let session = null;
 
         // when clicking on the upload field, trigger the file input
         document.querySelector('.upload_field').addEventListener('click', () => {
@@ -167,7 +178,8 @@ createApp({
         }
 
 
-        onMounted(() => {
+        onMounted(async () => {
+            await initializeModel(); // load model once            
             window.addEventListener('paste', async (event) => {
                 const items = event.clipboardData.items;
                 for (const item of items) {
@@ -203,18 +215,25 @@ createApp({
         });
 
 
-        return { image, result, handleFile };
+        return { image, result, handleFile, getFontName};
     },
     template: `
         <input type="file" accept="image/*" @change="handleFile" style="display:none;" />
         <div v-if="result" style="margin-bottom: 200px;">
             <p style="margin-top:20px">Top 4 Predictions</p>
             <div v-for="(pred, index) in result" :key="index" class="prediction">
-                <div :style="{ fontFamily: pred.fontName }" class="predicted_font">
+                <div :style="{ fontFamily: getFontName(pred) }" class="predicted_font">
                     {{ pred.index }}
                 </div>
                 <div>
-                    Confidence: {{ (pred.probability * 100).toFixed(2) }}%
+                    <a :href="pred.link" target="_blank">→ Google Fonts</a> | Confidence: {{ (pred.probability * 100).toFixed(2) }}%
+                </div>
+                <div v-if="pred.subfonts.length > 1" class="subfonts">
+                    <select v-model="pred.selectedSubfont">
+                        <option v-for="(subfont, subIndex) in pred.subfonts" :key="subIndex" :value="subfont">
+                            {{ subfont.split("-").slice(-1)[0].split(".")[0] }}
+                        </option>
+                    </select>
                 </div>
             </div>
         </div>
