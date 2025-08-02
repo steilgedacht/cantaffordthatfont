@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
-from dataloader import Datasubsets, Datagenerator
+from dataloader import Datagenerator
 from torchvision import models
 from tqdm import tqdm
 
