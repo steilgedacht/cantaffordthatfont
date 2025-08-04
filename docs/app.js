@@ -1,5 +1,42 @@
 const { createApp, ref, onMounted} = Vue;
 
+const fontOrder = [
+  "Thin",
+  "ThinItalic",
+  "ExtraLight",
+  "ExtraLightItalic",
+  "Light",
+  "LightItalic",
+  "Regular",
+  "Italic",
+  "Medium",
+  "MediumItalic",
+  "Semibold",
+  "SemiboldItalic",
+  "SemiBold",
+  "SemiBoldItalic",
+  "Bold",
+  "BoldItalic",
+  "ExtraBold",
+  "ExtraBoldItalic",
+  "Black",
+  "BlackItalic"
+];
+
+const getWeightFromFilename = (filename) => {
+  // Remove extension
+  const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
+
+  // Extract the weight part (assumes format: name-WEIGHT or name-WEIGHT-STYLE)
+  for (const weight of fontOrder) {
+    if (nameWithoutExt.endsWith(`-${weight}`)) {
+      return weight;
+    }
+  }
+
+  return null; // fallback if not found
+};
+
 async function runModel(inputData) {
     if (!session) {
         console.error("Model session not initialized.");
@@ -36,15 +73,25 @@ async function runModel(inputData) {
     const fonts_to_subfonts = await fetch('fonts_to_subfonts.json');
     const fonts_to_subfontsJson = await fonts_to_subfonts.json();
 
+
     const topPredictions = topIndices.map(i => ({
         index: fontsJson[i],
         probability: softmaxResult[i],
         font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0],
-        subfonts: fonts_to_subfontsJson[fontsJson[i]],
+        subfonts: fonts_to_subfontsJson[fontsJson[i]].sort((a, b) => {
+            const weightA = getWeightFromFilename(a);
+            const weightB = getWeightFromFilename(b);
+
+            const indexA = fontOrder.indexOf(weightA);
+            const indexB = fontOrder.indexOf(weightB);
+
+            return indexA - indexB;
+        }),
         selectedSubfont:  fonts_to_subfontsJson[fontsJson[i]][0],
         link: "https://fonts.google.com/?query=" + fontsJson[i].replace(/(?<!\d)([A-Z])/g, ' $1').trim().replace(" ", "+")
     }));
 
+    console.log(topPredictions);
     return topPredictions;
 }
 
