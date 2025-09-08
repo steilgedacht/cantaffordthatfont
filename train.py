@@ -21,7 +21,7 @@ class Config:
     characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     output_classes = 1738 
     num_epochs = 100
-    batch_size = 100
+    batch_size = 64
     learning_rate = 7e-4
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     generate_data = False  # Set to True to generate data
@@ -123,9 +123,6 @@ def train():
     model = GoogleFontsClassifier(config.output_classes, dropout=config.dropout)
     model.to(config.device)
 
-    criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.num_epochs, eta_min=0.00001)
 
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     model_filename = f"model/model_{timestamp}.pth"
@@ -139,9 +136,13 @@ def train():
     val_dataset = Subset(total_dataset, indices=indices[split:])
 
     # Create datasets and dataloaders with rotated targets without augmentation (for evaluation)
-    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.batch_size, shuffle=True, num_workers=8, pin_memory=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
+    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config.num_epochs * len(train_dataloader), eta_min=0.00001)
+    
     wandb.init(
         project="cantaffordthatfont",
         config={
@@ -161,17 +162,15 @@ def train():
 
         # Train the model
         model.train()
-        scaler = torch.amp.GradScaler()
         for inputs, targets in tqdm(train_dataloader, desc=f"Training (Epoch {epoch+1}/{config.num_epochs})", leave=False):
             inputs, targets = inputs.to(config.device), targets.to(config.device)
 
             optimizer.zero_grad()
-            with torch.amp.autocast(device_type="cuda"):
-                outputs = model(inputs)
-                loss = criterion(outputs, targets)
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            outputs = model(inputs)
+            loss = criterion(outputs, targets)
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
 
             correct_n += torch.sum(torch.argmax(outputs, dim=1) == targets).item()
             

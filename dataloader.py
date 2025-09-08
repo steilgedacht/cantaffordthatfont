@@ -5,7 +5,10 @@ import torch
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from torch.utils.data import Dataset
 import random
+import io
+from scipy.ndimage import gaussian_filter
 
+buffer = io.BytesIO()
 
 def load_fonts(only_basename=False):
     dir_path = os.getcwd()
@@ -15,6 +18,28 @@ def load_fonts(only_basename=False):
         for i in range(len(font_files)):
             font_files[i] = os.path.splitext(os.path.basename(font_files[i]))[0]
     return font_files
+
+def add_jpeg_artifacts(img: Image.Image, quality: int = 25) -> Image.Image:
+    buffer.seek(0)
+    buffer.truncate(0)
+    img.save(buffer, format="JPEG", quality=quality, subsampling=0)
+    buffer.seek(0)
+    return Image.open(buffer).copy()
+
+def random_cosine_texture(sigma=20.0):
+    H, W = 150, 700
+    
+    # Step 1: White noise
+    noise = np.random.rand(H, W).astype(np.float32)
+    
+    # Step 2: Smooth it with Gaussian blur
+    texture = gaussian_filter(noise, sigma=sigma)
+    
+    # Step 3: Normalize to [0,1]
+    texture -= texture.min()
+    texture /= texture.max()
+    
+    return texture
 
 class Datasubsets(Dataset):
     def __init__(self):
@@ -97,8 +122,6 @@ class Datagenerator(Dataset):
             font_family = self.font_to_subfonts[font_family_name][0]
         
         image_data = self.generate_samples(font_family)
-        image_data = image_data.convert("L")
-        image_data = np.asarray(image_data)
         image_data = torch.tensor(image_data, dtype=torch.float32)
 
         onehot_label = torch.tensor(self.fonts_unique.index(font_family_name), dtype=torch.long)
@@ -112,12 +135,13 @@ class Datagenerator(Dataset):
 
         # the images should have a size of 700px x 150px
         image_size = (700, 150)
-        font_size = np.random.randint(50, 100)
+        font_size = np.random.randint(40, 150)
 
         try:
             font = ImageFont.truetype(font_family, font_size)
         except:
             print(font_family)
+            return
 
         noise = np.random.randint(200, 255, size=(image_size[1], image_size[0], 3), dtype=np.uint8)
         noise = Image.fromarray(noise, "RGB")
@@ -134,5 +158,14 @@ class Datagenerator(Dataset):
 
         
         image = blurnoise.filter(ImageFilter.GaussianBlur(radius=random.randint(0,3)))
-    
+
+        image = add_jpeg_artifacts(image, quality=random.randint(10, 90))
+
+        image = image.convert("L")
+        image = np.asarray(image)
+
+        image = image - image * random_cosine_texture() * random.uniform(0.0, 0.6)
+
+        image = ((image - image.min()) / (image.max() - image.min()) * 255).astype(np.uint8)
+
         return image

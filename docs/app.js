@@ -9,6 +9,8 @@ const fontOrder = [
   "LightItalic",
   "Regular",
   "Italic",
+  "Mono",
+  "MonoItalic",
   "Medium",
   "MediumItalic",
   "Semibold",
@@ -36,6 +38,19 @@ const getWeightFromFilename = (filename) => {
 
   return null; // fallback if not found
 };
+
+function getPreferredSubfont(subfonts) {
+  const tryMatch = (weight) => 
+    subfonts.find(s => s.replace(/\.[^/.]+$/, "").endsWith(`-${weight}`));
+
+  return (
+    tryMatch("Medium") ||
+    tryMatch("Regular") ||
+    tryMatch("Mono") ||
+    subfonts[0]
+  );
+}
+
 
 async function runModel(inputData) {
     if (!session) {
@@ -75,9 +90,9 @@ async function runModel(inputData) {
 
 
     const topPredictions = topIndices.map(i => ({
-        index: fontsJson[i],
+        index: fontsJson[i].replace("[wght]", ""),
         probability: softmaxResult[i],
-        font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0],
+        font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0].replace("[", "%5B").replace("]", "%5D").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C"),
         subfonts: fonts_to_subfontsJson[fontsJson[i]].sort((a, b) => {
             const weightA = getWeightFromFilename(a);
             const weightB = getWeightFromFilename(b);
@@ -86,12 +101,14 @@ async function runModel(inputData) {
             const indexB = fontOrder.indexOf(weightB);
 
             return indexA - indexB;
-        }),
-        selectedSubfont:  fonts_to_subfontsJson[fontsJson[i]][0],
+        }).map(s => s.replace(/\[.*?\]/g, "")),
+        selectedSubfont: getPreferredSubfont(fonts_to_subfontsJson[fontsJson[i]]),
+        selectedSubfont_selectbox: getPreferredSubfont(fonts_to_subfontsJson[fontsJson[i]]).replace(/\[.*?\]/g, ""),
         link: "https://fonts.google.com/?query=" + fontsJson[i].replace(/(?<!\d)([A-Z])/g, ' $1').trim().replace(" ", "+")
     }));
 
     console.log(topPredictions);
+
     return topPredictions;
 }
 
@@ -164,14 +181,15 @@ function injectFont(fontName, fontUrl) {
             src: url('${fontUrl}');
         }
     `;
+    console.log(`Injecting font: ${fontName} from ${fontUrl}`);
     document.head.appendChild(style);
 }
 
 function getFontName(pred) {
-    index = pred.selectedSubfont.split("-")[0];
+    index = pred.selectedSubfont.split("-")[0].split(".")[0];
     let selected_subfont = pred.selectedSubfont.split("-").slice(-1)[0].split(".")[0];
-    const fontName = `PredictedFont-${index}-${selected_subfont}`;
-    injectFont(fontName, 'all_fonts_filtered/' + pred.selectedSubfont);
+    const fontName = `PredictedFont-${index}-${selected_subfont}`.replace("[wght]", "").replace("[wght]", "").replace("[wght]", "");
+    injectFont(fontName, pred.font_path);
     return fontName;
 }
 
@@ -183,6 +201,11 @@ createApp({
     setup() {
         const image = ref(null);
         const result = ref(null);
+        const isDarkMode = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        onMounted(() => {
+            document.body.classList.toggle('dark-mode', isDarkMode.value);
+        });
 
         let input_data = null;
         let session = null;
@@ -262,9 +285,22 @@ createApp({
         });
 
 
-        return { image, result, handleFile, getFontName};
+        function toggleDarkMode() {
+            isDarkMode.value = !isDarkMode.value;
+            document.body.classList.toggle('dark-mode', isDarkMode.value);
+        }
+
+        onMounted(() => {
+            // Initialer Zustand
+            document.body.classList.toggle('dark-mode', isDarkMode.value);
+        });
+
+        return { image, result, handleFile, getFontName, isDarkMode, toggleDarkMode };
     },
     template: `
+        <button id="dark-mode-toggle" @click="toggleDarkMode">
+            {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
+        </button>
         <input type="file" accept="image/*" @change="handleFile" style="display:none;" />
         <div v-if="result" style="margin-bottom: 200px;">
             <p style="margin-top:20px">Top 4 Predictions</p>

@@ -11,6 +11,7 @@
 body {
     text-align: center;
     background-color: rgb(247, 243, 233);
+    transition: background-color 0.1s, color 0.1s;
 }
 
 h1 {
@@ -131,4 +132,101 @@ h3 {
 a {
     color: rgba(0, 0, 0, 0.384);
     font-family: "Inter";
+}
+
+#dark-mode-toggle{
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    margin: 20px;
+    background: #f9f9f9;
+    color: rgba(19, 19, 19, 0.466);
+    border: 1.5px dashed #ccc;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-family: "Inter";
+}
+
+@media (max-width: 820px) {
+    .upload_field{
+        width: inherit;
+        font-size: 2em;
+        padding: 70px 30px 0px 30px;        
+    }
+    .prediction {
+        width: 80%;
+        min-width: unset;
+    }
+    .upload_wrapper {
+        width: 87%;
+    }
+}
+
+@media (max-width: 590px) {
+    h1 {
+        margin-top: 1em; 
+        font-size: 3em;
+    }
+    
+    h2 {
+        font-size: 2em;
+    }
+    
+    body {
+        margin: 0px 15px;
+    }
+}
+
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background-color: #181818;
+    color: #eee;
+}
+
+body.dark-mode h1,
+body.dark-mode h2 {
+    color: #fff;
+}
+
+body.dark-mode p,
+body.dark-mode h3,
+body.dark-mode .prediction div {
+    color: #bbb !important;
+}
+
+body.dark-mode .upload_field,
+body.dark-mode .prediction,
+body.dark-mode .subfonts select {
+    background-color: #232323;
+    border-color: #444;
+    color: #eee;
+    box-shadow: #00000033 10px 10px 10px 1px;
+}
+
+body.dark-mode .upload_field {
+    color: #bbb;
+}
+
+body.dark-mode .upload_wrapper::before {
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.08) 0px,
+        rgba(255,255,255,0.08) 2px,
+        transparent 1px,
+        transparent 6px
+    );
+}
+
+body.dark-mode .prediction div.predicted_font {
+    color: #fff;
+}
+
+body.dark-mode a {
+    color: #bbb;
+}
+
+body.dark-mode button#dark-mode-toggle {
+    color: #bbb;
+    background-color: #232323;
 }
