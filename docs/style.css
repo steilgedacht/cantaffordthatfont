@@ -76,7 +76,11 @@ p {
 h3 {
     font-family: "Inter";
     font-weight: 300
+}
 
+footer {
+    margin-top: 500px;
+    margin-bottom: 20px;
 }
 
 .prediction {
@@ -177,6 +181,30 @@ a {
     }
 }
 
+button {
+    margin-top: -22px;
+    border: 1.5px dashed #ccc;
+    border-radius: 10px;
+    padding: 2px 10px;
+    background: #f9f9f9;
+    font-family: "Inter";
+    color: rgba(0, 0, 0, 0.384);
+    margin-right: 5px;
+}
+
+#legal_text {
+    text-align: left;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 10px;
+    font-size: small;
+    color: rgba(0, 0, 0, 0.384);
+}
+
+#legal_text strong {
+    font-weight: 600;
+}
+
 
 /* Dark Mode Styles */
 body.dark-mode {
@@ -226,7 +254,7 @@ body.dark-mode a {
     color: #bbb;
 }
 
-body.dark-mode button#dark-mode-toggle {
+body.dark-mode button#dark-mode-toggle, body.dark-mode button {
     color: #bbb;
     background-color: #232323;
 }

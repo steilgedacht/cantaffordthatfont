@@ -89,11 +89,10 @@ async function runModel(inputData) {
     const fonts_to_subfontsJson = await fonts_to_subfonts.json();
 
 
-    const topPredictions = topIndices.map(i => ({
-        index: fontsJson[i].replace("[wght]", ""),
-        probability: softmaxResult[i],
-        font_path: 'all_fonts_filtered/' + fonts_to_subfontsJson[fontsJson[i]][0].replace("[", "%5B").replace("]", "%5D").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C").replace(",", "%2C"),
-        subfonts: fonts_to_subfontsJson[fontsJson[i]].sort((a, b) => {
+    const topPredictions = topIndices.map(i => {
+        const rawSubfonts = fonts_to_subfontsJson[fontsJson[i]];
+        // sort by weight using existing helper
+        const sortedRaw = rawSubfonts.slice().sort((a, b) => {
             const weightA = getWeightFromFilename(a);
             const weightB = getWeightFromFilename(b);
 
@@ -101,11 +100,18 @@ async function runModel(inputData) {
             const indexB = fontOrder.indexOf(weightB);
 
             return indexA - indexB;
-        }).map(s => s.replace(/\[.*?\]/g, "")),
-        selectedSubfont: getPreferredSubfont(fonts_to_subfontsJson[fontsJson[i]]),
-        selectedSubfont_selectbox: getPreferredSubfont(fonts_to_subfontsJson[fontsJson[i]]).replace(/\[.*?\]/g, ""),
-        link: "https://fonts.google.com/?query=" + fontsJson[i].replace(/(?<!\d)([A-Z])/g, ' $1').trim().replace(" ", "+")
-    }));
+        });
+
+        return {
+            index: fontsJson[i].replace("[wght]", ""),
+            probability: softmaxResult[i],
+            // don't store a fixed font_path here; build from selectedSubfont when needed
+            subfonts: sortedRaw.map(s => ({ name: s, display: s.replace(/\[.*?\]/g, "").split("-").slice(-1)[0].split(".")[0] })),
+            selectedSubfont: getPreferredSubfont(rawSubfonts),
+            selectedSubfont_selectbox: getPreferredSubfont(rawSubfonts).replace(/\[.*?\]/g, ""),
+            link: "https://fonts.google.com/?query=" + fontsJson[i].replace(/(?<!\\d)([A-Z])/g, ' $1').trim().replace(" ", "+")
+        };
+    });
 
     console.log(topPredictions);
 
@@ -185,11 +191,40 @@ function injectFont(fontName, fontUrl) {
     document.head.appendChild(style);
 }
 
+// new: try to preload font via FontFace API, fallback to injectFont
+async function preloadFont(rawFilename, fontName) {
+    // build path using encodeURIComponent for the filename only
+    const fontPath = 'all_fonts_filtered/' + encodeURIComponent(rawFilename);
+    if (document.fonts && [...document.fonts].some(f => f.family === fontName)) {
+        return; // already added
+    }
+
+    try {
+        // try to load with FontFace API and wait until the font is usable
+        const ff = new FontFace(fontName, `url("${fontPath}") format("truetype")`);
+        await ff.load();
+        document.fonts.add(ff);
+        // ensure the font is available for rendering
+        try {
+            await document.fonts.load(`16px "${fontName}"`);
+            await document.fonts.ready;
+        } catch (e) {
+            // non-fatal: proceed, font likely loaded
+            console.warn('document.fonts.load/ready failed for', fontName, e);
+        }
+        console.log(`Preloaded font ${fontName} -> ${fontPath}`);
+    } catch (e) {
+        console.warn(`FontFace load failed for ${fontName}, falling back to @font-face injection:`, e);
+        injectFont(fontName, fontPath);
+    }
+}
+
 function getFontName(pred) {
-    index = pred.selectedSubfont.split("-")[0].split(".")[0];
-    let selected_subfont = pred.selectedSubfont.split("-").slice(-1)[0].split(".")[0];
-    const fontName = `PredictedFont-${index}-${selected_subfont}`.replace("[wght]", "").replace("[wght]", "").replace("[wght]", "");
-    injectFont(fontName, pred.font_path);
+    // compute font-family name but don't inject here
+    const raw = pred.selectedSubfont || (pred.subfonts && pred.subfonts[0] && pred.subfonts[0].name) || '';
+    const index = raw.split("-")[0].split(".")[0];
+    const selected_subfont = raw.split("-").slice(-1)[0].split(".")[0].replace(/\[.*?\]/g, "");
+    const fontName = `PredictedFont-${index}-${selected_subfont}`.replace("[wght]", "");
     return fontName;
 }
 
@@ -236,12 +271,13 @@ createApp({
                 
                 const predictions = await runModel(input_data);
 
-                // Inject fonts into <head>
-                predictions.forEach((pred, i) => {
-                    const fontName = `PredictedFont-${i}`;
-                    injectFont(fontName, pred.font_path);
+                // preload fonts into document.fonts (prevents layout jumps)
+                await Promise.all(predictions.map(async (pred, i) => {
+                    const raw = pred.selectedSubfont || (pred.subfonts && pred.subfonts[0] && pred.subfonts[0].name);
+                    const fontName = getFontName(pred);
+                    if (raw) await preloadFont(raw, fontName);
                     pred.fontName = fontName; // store it for later use
-                });
+                }));
 
                 result.value = predictions;
             };
@@ -250,38 +286,72 @@ createApp({
 
         onMounted(async () => {
             await initializeModel(); // load model once            
-            window.addEventListener('paste', async (event) => {
-                const items = event.clipboardData.items;
-                for (const item of items) {
-                    if (item.type.startsWith('image/')) {
-                        const file = item.getAsFile();
-                        if (file) {
+
+            // prevent multiple registrations if onMounted is called multiple times
+            if (window.__pasteHandlerAdded) return;
+            window.__pasteHandlerAdded = true;
+
+            document.addEventListener('paste', async (event) => {
+                try {
+                    const clipboard = event.clipboardData || window.clipboardData;
+                    if (!clipboard) return;
+
+                    const items = clipboard.items || clipboard.files || [];
+                    for (const item of items) {
+                        if (!item) continue;
+
+                        // handle DataTransferItem (has .type) or File (from clipboard.files)
+                        const itemType = item.type || (item.name && item.type) || '';
+                        if (!itemType) continue;
+
+                        if (itemType.startsWith('image/')) {
+                            // only prevent default when we handle an image so normal text paste still works
+                            event.preventDefault();
+
+                            const file = (typeof item.getAsFile === 'function') ? item.getAsFile() : (item instanceof File ? item : null);
+                            const fallbackFile = (clipboard.files && clipboard.files.length > 0) ? clipboard.files[0] : null;
+                            const imgFile = file || fallbackFile;
+                            if (!imgFile) continue;
+
+                            const objectUrl = URL.createObjectURL(imgFile);
                             const img = new Image();
-                            img.src = URL.createObjectURL(file);
+                            img.src = objectUrl;
                             img.onload = async () => {
-                                document.querySelector('.upload_field').style.backgroundImage = `url(${img.src})`;
-                                document.querySelector('.upload_field').style.backgroundSize = 'contain';
-                                document.querySelector('.upload_field').style.backgroundPosition = 'center';
-                                document.querySelector('.upload_field').style.backgroundRepeat = 'no-repeat';
-                                document.querySelector('.upload_field').textContent = '';
-                                document.querySelector('.upload_field').style.height = img.height;
+                                const uploadField = document.querySelector('.upload_field');
+                                if (uploadField) {
+                                    uploadField.style.backgroundImage = `url(${objectUrl})`;
+                                    uploadField.style.backgroundSize = 'contain';
+                                    uploadField.style.backgroundPosition = 'center';
+                                    uploadField.style.backgroundRepeat = 'no-repeat';
+                                    uploadField.textContent = '';
+                                    uploadField.style.height = img.height + 'px';
+                                }
 
                                 const input_data = await process_image(img);
                                 const predictions = await runModel(input_data);
 
-                                // Inject fonts
-                                predictions.forEach((pred, i) => {
-                                    const fontName = `PredictedFont-${i}`;
-                                    injectFont(fontName, pred.font_path);
+                                // preload fonts
+                                await Promise.all(predictions.map(async (pred, i) => {
+                                    const raw = pred.selectedSubfont || (pred.subfonts && pred.subfonts[0] && pred.subfonts[0].name);
+                                    const fontName = getFontName(pred);
+                                    if (raw) await preloadFont(raw, fontName);
                                     pred.fontName = fontName;
-                                });
+                                }));
 
                                 result.value = predictions;
+
+                                // free object URL
+                                URL.revokeObjectURL(objectUrl);
                             };
+
+                            // we handled an image — stop processing further items
+                            break;
                         }
                     }
+                } catch (err) {
+                    console.error('Paste handler error:', err);
                 }
-            });
+            }, false);
         });
 
 
@@ -290,12 +360,44 @@ createApp({
             document.body.classList.toggle('dark-mode', isDarkMode.value);
         }
 
+        // new: preload when user selects different subfont
+        async function onSubfontChange(pred) {
+            try {
+                const raw = pred.selectedSubfont || (pred.subfonts && pred.subfonts[0] && pred.subfonts[0].name);
+                if (!raw) return;
+                const fontName = getFontName(pred);
+                await preloadFont(raw, fontName);
+                pred.fontName = fontName;
+            } catch (e) {
+                console.error('Subfont load failed', e);
+            }
+        }
+
+        // show legal text in footer
+        function showLegal(type) {
+            const container = document.getElementById('legal_text');
+            if (!container) return;
+            if (type === 'imprint') {
+                container.innerHTML = '<p><strong>Imprint</strong></p><p>Benjamin Bergmann<br>Altenberger Straße 9, 415<br>4040 Linz<br>Austria<br><p><a href="mailto:bergmannbenjamin@proton.me">bergmannbenjamin@proton.me</a></p>';
+            } else if (type === 'privacy') {
+                container.innerHTML = '<p><strong>Privacy Policy</strong></p><p>This website is hosted via GitHub Pages, a service of GitHub, Inc., 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA. When you access the website, technical information such as your IP address, browser type, operating system and time of access is automatically processed by GitHub to ensure operation and security. For details, see the <a href="https://docs.github.com/en/site-policy/privacy-policies/github-privacy-statement" target="_blank">GitHub Privacy Statement</a>. This website does not set cookies and does not use tracking or analytics tools. If you enter data into the provided tool, the data is processed locally in your browser only and is not stored or transmitted.</p>';
+            }
+            // scroll into view smoothly
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
         onMounted(() => {
             // Initialer Zustand
             document.body.classList.toggle('dark-mode', isDarkMode.value);
+
+            // register footer button handlers
+            const btnImprint = document.getElementById('btn-imprint');
+            const btnPrivacy = document.getElementById('btn-privacy');
+            if (btnImprint) btnImprint.addEventListener('click', () => showLegal('imprint'));
+            if (btnPrivacy) btnPrivacy.addEventListener('click', () => showLegal('privacy'));
         });
 
-        return { image, result, handleFile, getFontName, isDarkMode, toggleDarkMode };
+        return { image, result, handleFile, getFontName, isDarkMode, toggleDarkMode, onSubfontChange };
     },
     template: `
         <button id="dark-mode-toggle" @click="toggleDarkMode">
@@ -305,16 +407,16 @@ createApp({
         <div v-if="result" style="margin-bottom: 200px;">
             <p style="margin-top:20px">Top 4 Predictions</p>
             <div v-for="(pred, index) in result" :key="index" class="prediction">
-                <div :style="{ fontFamily: getFontName(pred) }" class="predicted_font">
+                <div :style="{ fontFamily: pred.fontName || getFontName(pred) }" class="predicted_font">
                     {{ pred.index }}
                 </div>
                 <div>
                     <a :href="pred.link" target="_blank">→ Google Fonts</a> | Confidence: {{ (pred.probability * 100).toFixed(2) }}%
                 </div>
                 <div v-if="pred.subfonts.length > 1" class="subfonts">
-                    <select v-model="pred.selectedSubfont">
-                        <option v-for="(subfont, subIndex) in pred.subfonts" :key="subIndex" :value="subfont">
-                            {{ subfont.split("-").slice(-1)[0].split(".")[0] }}
+                    <select v-model="pred.selectedSubfont" @change="onSubfontChange(pred)">
+                        <option v-for="(subfont, subIndex) in pred.subfonts" :key="subIndex" :value="subfont.name">
+                            {{ subfont.display }}
                         </option>
                     </select>
                 </div>
